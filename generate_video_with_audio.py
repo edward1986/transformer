@@ -14,7 +14,7 @@ def generate_text_descriptions():
 
     input_text = "Create a sequence of images describing a sunrise over a mountain"
     input_ids = tokenizer.encode(input_text, return_tensors='pt')
-    attention_mask = tokenizer.encode(input_text, return_tensors='pt')
+    attention_mask = (input_ids != tokenizer.pad_token_id).long()
 
     # Use top_k sampling to generate multiple sequences
     output = model.generate(
@@ -39,12 +39,13 @@ def text_to_image(text, image_size=(800, 400), font_size=48):
     img = Image.new('RGB', image_size, color=(73, 109, 137))
     d = ImageDraw.Draw(img)
     
-    # Load default font and adjust size manually
+    # Use default PIL font with adjusted size
     font = ImageFont.load_default()
-
-    # Calculate text size and position to center the text
-    text_width, text_height = d.textsize(text, font=font)
-    scale_factor = font_size / 10  # Default font size is approximately 10
+    text_bbox = d.textbbox((0, 0), text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    
+    scale_factor = font_size / 10  # Adjusting size manually since default font size is approximately 10
     text_width = int(text_width * scale_factor)
     text_height = int(text_height * scale_factor)
     text_x = (image_size[0] - text_width) // 2
