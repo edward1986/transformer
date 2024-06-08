@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from gtts import gTTS
 from moviepy.editor import ImageSequenceClip, AudioFileClip, concatenate_videoclips
+import torch
 
 def generate_text_descriptions():
     model_name = 'gpt2'
@@ -14,7 +15,12 @@ def generate_text_descriptions():
 
     input_text = "Create a sequence of images describing a sunrise over a mountain"
     input_ids = tokenizer.encode(input_text, return_tensors='pt')
-    attention_mask = (input_ids != tokenizer.pad_token_id).long()
+    
+    # Manually set the pad token id if it does not exist
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    
+    attention_mask = (input_ids != tokenizer.pad_token_id).to(torch.long)
 
     # Use top_k sampling to generate multiple sequences
     output = model.generate(
