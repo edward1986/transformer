@@ -15,6 +15,7 @@ def generate_text_descriptions():
     input_text = "Create a sequence of images describing a sunrise over a mountain"
     input_ids = tokenizer.encode(input_text, return_tensors='pt')
 
+    # Use top_k sampling to generate multiple sequences
     output = model.generate(input_ids, max_length=50, num_return_sequences=5, do_sample=True, top_k=50)
     descriptions = [tokenizer.decode(o, skip_special_tokens=True) for o in output]
 
@@ -25,13 +26,22 @@ def split_text_into_chunks(text, chunk_size=3):
     chunks = [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
     return chunks
 
-def text_to_image(text, image_size=(800, 400), font_size=24):
+def text_to_image(text, image_size=(800, 400), font_path="arial.ttf", font_size=48):
     img = Image.new('RGB', image_size, color=(73, 109, 137))
     d = ImageDraw.Draw(img)
-    font = ImageFont.load_default()
+    
+    # Load a TrueType or OpenType font file, you can use any TTF file available on your system
+    try:
+        font = ImageFont.truetype(font_path, font_size)
+    except IOError:
+        font = ImageFont.load_default()
 
-    text_position = (10, 10)
-    d.text(text_position, text, fill=(255, 255, 0), font=font)
+    # Calculate text size and position to center the text
+    text_width, text_height = d.textsize(text, font=font)
+    text_x = (image_size[0] - text_width) // 2
+    text_y = (image_size[1] - text_height) // 2
+
+    d.text((text_x, text_y), text, fill=(255, 255, 0), font=font)
 
     return img
 
