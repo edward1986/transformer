@@ -1,3 +1,5 @@
+# generate_video.py
+
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from PIL import Image, ImageDraw, ImageFont
 import cv2
@@ -11,7 +13,8 @@ def generate_text_descriptions():
     input_text = "Create a sequence of images describing a sunrise over a mountain"
     input_ids = tokenizer.encode(input_text, return_tensors='pt')
 
-    output = model.generate(input_ids, max_length=100, num_return_sequences=5)
+    # Use top_k sampling to generate multiple sequences
+    output = model.generate(input_ids, max_length=100, num_return_sequences=5, do_sample=True, top_k=50)
     descriptions = [tokenizer.decode(o, skip_special_tokens=True) for o in output]
 
     return descriptions
