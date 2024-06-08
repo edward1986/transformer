@@ -2,3 +2,5 @@ transformers
 torch
 Pillow
 opencv-python
+moviepy
+gtts
